@@ -130,8 +130,13 @@ class MeetingBot:
         self.chat_ctrl = None
         self.chat_ctrl_event = None
 
+        self.deepgram_transcriber = None  # Will be initialized later
+        self.chat_ctrl = None  # Zoom chat controller
+        self.my_participant_id = None
+        self.other_participant_id = None
+
     def send_transcription_to_chat(self, transcription):
-        # Send the transcription to chat
+        # Send the transcription to Zoom chat
         builder = self.chat_ctrl.GetChatMessageBuilder()
         builder.SetContent(transcription)
         builder.SetReceiver(self.other_participant_id)  # Send to the other participant (or to you)
