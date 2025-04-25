@@ -1,13 +1,11 @@
 from deepgram.utils import verboselogs
 import os
-
 from deepgram import (
     DeepgramClient,
     DeepgramClientOptions,
     LiveTranscriptionEvents,
     LiveOptions,
 )
-
 import asyncio
 
 class DeepgramTranscriber:
@@ -15,19 +13,17 @@ class DeepgramTranscriber:
         # Pass the bot instance to send chat messages
         self.bot = bot
 
-        # Configure the DeepgramClientOptions to enable KeepAlive for maintaining the WebSocket connection (only if necessary to your scenario)
-        config = DeepgramClientOptions(
-            options={"keepalive": "true"}
-        )
-
-        # Create a websocket connection using the DEEPGRAM_API_KEY from environment variables
+        # Configure the DeepgramClientOptions to enable KeepAlive for maintaining the WebSocket connection
+        config = DeepgramClientOptions(options={"keepalive": "true"})
+        
+        # Initialize Deepgram client
         self.deepgram = DeepgramClient(os.environ.get('DEEPGRAM_API_KEY'), config)
-
-        # Use the listen.live class to create the websocket connection
+        
+        # Create websocket connection
         self.dg_connection = self.deepgram.listen.websocket.v("1")
-
+        
         # Define the on_message callback function to handle transcriptions
-        def on_message(self, result, **kwargs):
+        def on_message(result, **kwargs):
             sentence = result.channel.alternatives[0].transcript
             if len(sentence) == 0:
                 return
