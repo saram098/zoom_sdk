@@ -28,15 +28,25 @@ class DeepgramTranscriber:
 
         # Define the on_message callback function to handle transcriptions
         def on_message(self, result, **kwargs):
-            # Ensure that the 'result' contains a valid transcription and handle the data correctly
             try:
-                sentence = result['channel']['alternatives'][0]['transcript']
+                # Check if result is a dictionary or string
+                if isinstance(result, dict):
+                    # Handle the dictionary response, assuming it's structured as Deepgram API expects
+                    sentence = result['channel']['alternatives'][0]['transcript']
+                elif isinstance(result, str):
+                    # If result is a string, treat it as a direct transcription
+                    sentence = result
+                else:
+                    raise ValueError("Received unexpected result format: {}".format(result))
+
                 if len(sentence) == 0:
                     return
+
                 print(f"Transcription: {sentence}")
 
                 # Send the transcription to the Zoom chat (to you or other participants)
                 self.bot.send_transcription_to_chat(sentence)
+
             except Exception as e:
                 print(f"Error while processing transcription: {e}")
 
