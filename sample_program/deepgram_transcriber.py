@@ -15,7 +15,7 @@ class DeepgramTranscriber:
         # Pass the bot instance to send chat messages
         self.bot = bot
 
-        # Configure the DeepgramClientOptions to enable KeepAlive for maintaining the WebSocket connection (only if necessary to your scenario)
+        # Configure the DeepgramClientOptions to enable KeepAlive for maintaining the WebSocket connection
         config = DeepgramClientOptions(
             options={"keepalive": "true"}
         )
@@ -28,19 +28,22 @@ class DeepgramTranscriber:
 
         # Define the on_message callback function to handle transcriptions
         def on_message(result, **kwargs):
-            sentence = result.channel.alternatives[0].transcript
-            if len(sentence) == 0:
-                return
-            print(f"Transcription: {sentence}")
+            try:
+                sentence = result['channel']['alternatives'][0]['transcript']
+                if len(sentence) == 0:
+                    return
+                print(f"Transcription: {sentence}")
 
-            # Send the transcription to the Zoom chat (to you or other participants)
-            self.bot.send_transcription_to_chat(sentence)
+                # Send the transcription to the Zoom chat (to you or other participants)
+                self.bot.send_transcription_to_chat(sentence)
+            except Exception as e:
+                print(f"Error while processing transcription: {e}")
 
         # Bind the on_message callback to the transcription event
         self.dg_connection.on(LiveTranscriptionEvents.Transcript, on_message)
 
         # Define the on_error callback function to handle errors
-        def on_error(self, error, **kwargs):
+        def on_error(error, **kwargs):
             print(f"Error: {error}")
 
         self.dg_connection.on(LiveTranscriptionEvents.Error, on_error)
