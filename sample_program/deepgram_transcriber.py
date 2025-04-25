@@ -1,4 +1,3 @@
-from deepgram.utils import verboselogs
 import os
 from deepgram import (
     DeepgramClient,
@@ -6,43 +5,41 @@ from deepgram import (
     LiveTranscriptionEvents,
     LiveOptions,
 )
-import asyncio
 
 class DeepgramTranscriber:
     def __init__(self, bot):
-        # Pass the bot instance to send chat messages
-        self.bot = bot
+        self.bot = bot  # The bot instance to send transcriptions to Zoom chat
 
-        # Configure the DeepgramClientOptions to enable KeepAlive for maintaining the WebSocket connection
-        config = DeepgramClientOptions(options={"keepalive": "true"})
-        
-        # Initialize Deepgram client
+        # Initialize Deepgram API client with KeepAlive option
+        config = DeepgramClientOptions(
+            options={"keepalive": "true"}
+        )
+
+        # Create a WebSocket connection to Deepgram for live transcription
         self.deepgram = DeepgramClient(os.environ.get('DEEPGRAM_API_KEY'), config)
-        
-        # Create websocket connection
         self.dg_connection = self.deepgram.listen.websocket.v("1")
-        
+
         # Define the on_message callback function to handle transcriptions
-        def on_message(result, **kwargs):
+        def on_message(self, result, **kwargs):
             sentence = result.channel.alternatives[0].transcript
             if len(sentence) == 0:
                 return
             print(f"Transcription: {sentence}")
 
-            # Send the transcription to the Zoom chat (To all participants or to you)
+            # Send the transcription to the Zoom chat (to you or other participants)
             self.bot.send_transcription_to_chat(sentence)
 
-        # Bind the on_message callback to the transcription event
+        # Bind the callback function to the transcription event
         self.dg_connection.on(LiveTranscriptionEvents.Transcript, on_message)
 
-        # Define the on_error callback to handle any errors from Deepgram
+        # Define the on_error callback function to handle errors
         def on_error(self, error, **kwargs):
             print(f"Error: {error}")
 
         # Bind the on_error callback to the error event
         self.dg_connection.on(LiveTranscriptionEvents.Error, on_error)
 
-        # Set the options for live transcription (including language and model)
+        # Set transcription options (model, language, etc.)
         options = LiveOptions(
             model="nova-2-conversationalai",
             punctuate=True,
@@ -64,7 +61,6 @@ class DeepgramTranscriber:
     PCM_FILE_PATH = 'sample_program/out/test_audio_16778240.pcm'
     CHUNK_SIZE = 64000 * 10
 
-    # This function sends the audio PCM chunks to Deepgram for transcription
     async def send_pcm(self):
         with open(self.PCM_FILE_PATH, 'rb') as pcm_file:
             while True:

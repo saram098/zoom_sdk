@@ -9,23 +9,14 @@ import gi
 gi.require_version('GLib', '2.0')
 from gi.repository import GLib
 
-
 def save_yuv420_frame_as_png(frame_bytes, width, height, output_path):
     try:
-        # Convert bytes to numpy array
         yuv_data = np.frombuffer(frame_bytes, dtype=np.uint8)
-
-        # Reshape into I420 format with U/V planes
         yuv_frame = yuv_data.reshape((height * 3 // 2, width))
-
-        # Convert from YUV420 to BGR
         bgr_frame = cv2.cvtColor(yuv_frame, cv2.COLOR_YUV2BGR_I420)
-
-        # Save as PNG
         cv2.imwrite(output_path, bgr_frame)
     except Exception as e:
         print(f"Error saving frame to {output_path}: {e}")
-
 
 def generate_jwt(client_id, client_secret):
     iat = datetime.utcnow()
@@ -41,21 +32,16 @@ def generate_jwt(client_id, client_secret):
     token = jwt.encode(payload, client_secret, algorithm="HS256")
     return token
 
-
 def normalized_rms_audio(pcm_data: bytes, sample_width: int = 2) -> bool:
     if len(pcm_data) == 0:
         return True
-        
     import array
-    samples = array.array('h')  # signed short integer array
+    samples = array.array('h')
     samples.frombytes(pcm_data)
-    
     sum_squares = sum(sample * sample for sample in samples)
     rms = (sum_squares / len(samples)) ** 0.5
-    
     normalized_rms = rms / 32767.0
     return normalized_rms
-
 
 def create_red_yuv420_frame(width=640, height=360):
     bgr_frame = np.zeros((height, width, 3), dtype=np.uint8)
@@ -63,10 +49,9 @@ def create_red_yuv420_frame(width=640, height=360):
     yuv_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2YUV_I420)
     return yuv_frame.tobytes()
 
-
 class MeetingBot:
     def __init__(self):
-        self.deepgram_transcriber = None  # DeepgramTranscriber will be initialized later
+        self.deepgram_transcriber = None
         self.chat_ctrl = None
         self.my_participant_id = None
         self.other_participant_id = None
@@ -89,22 +74,21 @@ class MeetingBot:
     def send_transcription_to_chat(self, transcription):
         builder = self.chat_ctrl.GetChatMessageBuilder()
         builder.SetContent(transcription)
-        builder.SetReceiver(self.other_participant_id)  # Send to the other participant
-        builder.SetMessageType(zoom.SDKChatMessageType.To_Individual)  # Or .To_All for all participants
+        builder.SetReceiver(self.other_participant_id)
+        builder.SetMessageType(zoom.SDKChatMessageType.To_Individual)  
         msg = builder.Build()
         send_result = self.chat_ctrl.SendChatMsgTo(msg)
         print(f"send_result = {send_result}")
         builder.Clear()
 
     def on_join(self):
-        self.deepgram_transcriber = DeepgramTranscriber(self)  # Pass 'self' (the bot instance)
-        
+        self.deepgram_transcriber = DeepgramTranscriber(self)
         self.chat_ctrl = self.meeting_service.GetMeetingChatController()
         self.chat_ctrl_event = zoom.MeetingChatEventCallbacks(onChatMsgNotificationCallback=self.on_chat_msg_notification_callback)
         self.chat_ctrl.SetEvent(self.chat_ctrl_event)
-        
+
         builder = self.chat_ctrl.GetChatMessageBuilder()
-        builder.SetContent("Welcome to the Zoom Meeting!")
+        builder.SetContent("Welcome to the Zoom Meeting Bot!")
         builder.SetReceiver(self.my_participant_id)
         builder.SetMessageType(zoom.SDKChatMessageType.To_Individual)
         msg = builder.Build()
@@ -115,7 +99,6 @@ class MeetingBot:
     def on_chat_msg_notification_callback(self, chat_msg_info, content):
         print(f"Message ID: {chat_msg_info.GetMessageID()}")
         print(f"Content: {chat_msg_info.GetContent()}")
-        # Handle received chat messages if needed
 
     def cleanup(self):
         if self.meeting_service:
@@ -199,4 +182,3 @@ class MeetingBot:
 
         self.audio_settings = self.setting_service.GetAudioSettings()
         self.audio_settings.EnableAutoJoinAudio(True)
-
