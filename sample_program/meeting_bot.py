@@ -1,4 +1,3 @@
-#Saram huiii
 import zoom_meeting_sdk as zoom
 import jwt
 from deepgram_transcriber import DeepgramTranscriber
@@ -273,6 +272,7 @@ class MeetingBot:
         send_result = self.chat_ctrl.SendChatMsgTo(msg)
         print("send_result =", send_result)
         builder.Clear()
+
 
     def on_user_active_audio_change_callback(self, user_ids):
         print("on_user_active_audio_change_callback called. user_ids =", user_ids)
