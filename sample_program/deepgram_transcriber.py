@@ -1,4 +1,6 @@
+from deepgram.utils import verboselogs
 import os
+
 from deepgram import (
     DeepgramClient,
     DeepgramClientOptions,
@@ -6,17 +8,22 @@ from deepgram import (
     LiveOptions,
 )
 
+import asyncio
+
 class DeepgramTranscriber:
     def __init__(self, bot):
-        self.bot = bot  # The bot instance to send transcriptions to Zoom chat
+        # Pass the bot instance to send chat messages
+        self.bot = bot
 
-        # Initialize Deepgram API client with KeepAlive option
+        # Configure the DeepgramClientOptions to enable KeepAlive for maintaining the WebSocket connection (only if necessary to your scenario)
         config = DeepgramClientOptions(
             options={"keepalive": "true"}
         )
 
-        # Create a WebSocket connection to Deepgram for live transcription
+        # Create a websocket connection using the DEEPGRAM_API_KEY from environment variables
         self.deepgram = DeepgramClient(os.environ.get('DEEPGRAM_API_KEY'), config)
+
+        # Use the listen.live class to create the websocket connection
         self.dg_connection = self.deepgram.listen.websocket.v("1")
 
         # Define the on_message callback function to handle transcriptions
