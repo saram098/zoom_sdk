@@ -27,7 +27,8 @@ class DeepgramTranscriber:
         self.dg_connection = self.deepgram.listen.websocket.v("1")
 
         # Define the on_message callback function to handle transcriptions
-        def on_message(result, **kwargs):
+        def on_message(self, result, **kwargs):
+            # Ensure that the 'result' contains a valid transcription and handle the data correctly
             try:
                 sentence = result['channel']['alternatives'][0]['transcript']
                 if len(sentence) == 0:
@@ -39,11 +40,10 @@ class DeepgramTranscriber:
             except Exception as e:
                 print(f"Error while processing transcription: {e}")
 
-        # Bind the on_message callback to the transcription event
         self.dg_connection.on(LiveTranscriptionEvents.Transcript, on_message)
 
         # Define the on_error callback function to handle errors
-        def on_error(error, **kwargs):
+        def on_error(self, error, **kwargs):
             print(f"Error: {error}")
 
         self.dg_connection.on(LiveTranscriptionEvents.Error, on_error)
