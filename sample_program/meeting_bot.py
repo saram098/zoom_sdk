@@ -9,6 +9,7 @@ import gi
 gi.require_version('GLib', '2.0')
 from gi.repository import GLib
 
+
 def save_yuv420_frame_as_png(frame_bytes, width, height, output_path):
     try:
         # Convert bytes to numpy array
@@ -25,6 +26,7 @@ def save_yuv420_frame_as_png(frame_bytes, width, height, output_path):
     except Exception as e:
         print(f"Error saving frame to {output_path}: {e}")
 
+
 def generate_jwt(client_id, client_secret):
     iat = datetime.utcnow()
     exp = iat + timedelta(hours=24)
@@ -38,6 +40,7 @@ def generate_jwt(client_id, client_secret):
     
     token = jwt.encode(payload, client_secret, algorithm="HS256")
     return token
+
 
 def normalized_rms_audio(pcm_data: bytes, sample_width: int = 2) -> bool:
     if len(pcm_data) == 0:
@@ -53,11 +56,13 @@ def normalized_rms_audio(pcm_data: bytes, sample_width: int = 2) -> bool:
     normalized_rms = rms / 32767.0
     return normalized_rms
 
+
 def create_red_yuv420_frame(width=640, height=360):
     bgr_frame = np.zeros((height, width, 3), dtype=np.uint8)
     bgr_frame[:, :] = [0, 0, 255]  # Pure red in BGR
     yuv_frame = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2YUV_I420)
     return yuv_frame.tobytes()
+
 
 class MeetingBot:
     def __init__(self):
